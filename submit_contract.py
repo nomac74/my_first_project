@@ -3,12 +3,22 @@ from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
+import requests
 from datetime import datetime
 from pdfdocument.document import PDFDocument
 
+def download_file(url):
+    local_filename = url.split('/')[-1]
+    with requests.get(url, stream=True) as r:
+        r.raise_for_status()
+        with open(local_filename, 'wb') as f:
+            for chunk in r.iter_content(chunk_size=8192): 
+                f.write(chunk)
+    return local_filename
+
 #전역변수
 current_year = date.today().year
-font_path = 'C:/users/user/appdata/local/microsoft/Windows/Fonts/NANUMSQUARENEO-ALT.ttf' 
+font_path = download_file('https://github.com/nomac74/my_first_project/raw/gh-pages/NanumSquareNeo-aLt.ttf') 
 
 def calculate_salary(hourly_wage, start_hour, end_hour, weekly_working_days, break_time):
     if end_hour >= start_hour:
