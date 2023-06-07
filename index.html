@@ -143,12 +143,39 @@
     // 폼 제출 시 폼 검증 실행
     var form = document.getElementById("contract_form");
     form.addEventListener("submit", function (event) {
+      event.preventDefault(); // 폼 제출 막기
+
       if (!validateForm()) {
-        event.preventDefault(); // 폼 제출 막기
+        return;
       }
+
+      var doc = new jsPDF();
+      doc.setFontSize(20);
+      doc.text('표준근로계약서', 20, 20);
+
+      doc.setFontSize(10);
+      doc.text('1. 고용주(회사) 이름: ' + form.employer_name.value, 20, 30);
+      doc.text('2. 근로자 이름: ' + form.employee_name.value, 20, 40);
+      doc.text('3. 담당 업무: ' + form.job_title.value, 20, 50);
+      doc.text('4. 시간당 임금: ' + form.hourly_wage.value, 20, 60);
+      doc.text('5. 출근 시간: ' + form.start_hour.value, 20, 70);
+      doc.text('6. 퇴근 시간: ' + form.end_hour.value, 20, 80);
+      doc.text('7. 휴게 시간 (0~4시간; 0.5는 30분): ' + form.break_time.value, 20, 90);
+      doc.text('8. 주당 근무 일수: ' + form.weekly_working_days.value, 20, 100);
+      doc.text('[계약 시작일]: ' + form.contract_start.value, 20, 110);
+      doc.text('[계약 종료일]: ' + form.contract_end.value, 20, 120);
+
+      doc.save('contract.pdf');
     });
   </script>
-
 </body>
-
 </html>
+이 코드는 HTML form에 입력된 내용을 바탕으로 새로운 PDF 문서를 생성하고, 사용자가 그것을 다운로드할 수 있게 해줍니다. jsPDF를 이용하면 웹 브라우저에서 바로 PDF 문서를 만들 수 있어 매우 편리합니다.
+
+다만 이 코드는 예시이며 실제로 사용하기 위해서는 폼 검증 코드를 보완하거나 PDF의 디자인을 보완해야 할 수도 있습니다. 추가적인 기능을 원하시면 jsPDF의 API 문서를 참고해주세요.
+
+
+
+
+
+
