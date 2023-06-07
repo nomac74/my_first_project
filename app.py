@@ -3,6 +3,8 @@ from datetime import datetime
 from flask import Flask, render_template, request
 from reportlab.pdfgen import canvas
 from submit_contract import create_contract
+from flask import send_file
+import tempfile
 
 app = Flask(__name__)
 
@@ -61,10 +63,11 @@ def submit_contract():
         "contract_end": contract_end
     }
 
-    # 계약서 생성
     contract_text = create_contract(data)
     year = datetime.now().year
 
+    # 임시 파일을 생성
+    temp = tempfile.NamedTemporaryFile(delete=False)
     file_name = f'{year}_{employee_name}_근로계약서.pdf'
     file_path = os.path.join(save_folder, file_name)
 
@@ -77,7 +80,7 @@ def submit_contract():
     from reportlab.pdfbase.ttfonts import TTFont
 
      # 한글 폰트 파일 로드
-    font_path = '/usr/share/fonts/truetype/NANUMSQUARENEO-ALT.ttf'  # 한글 폰트 파일의 실제 경로로 수정
+    font_path = download_file('https://github.com/nomac74/my_first_project/raw/gh-pages/NanumSquareNeo-aLt.ttf')  # 한글 폰트 파일의 실제 경로로 수정
     pdfmetrics.registerFont(TTFont('KoreanFont', font_path))
 
     # PDF 생성 시 폰트 설정
@@ -87,7 +90,7 @@ def submit_contract():
 
     # PDF 저장
     c.save()
-    return '계약서가 생성되었습니다.'
+    return send_file(temp.name, as_attachment=True, attachment_filename=file_name, mimetype='application/pdf')
 
 if __name__ == '__main__':
     app.run()
