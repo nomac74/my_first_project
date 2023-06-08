@@ -70,7 +70,6 @@ def submit_contract():
 
     # PDF 생성
     c = canvas.Canvas(file_path)
-    c.drawString(30, 800, contract_text)
 
     # 한글 폰트 설정
     from reportlab.pdfbase import pdfmetrics
@@ -82,7 +81,6 @@ def submit_contract():
 
     # PDF 생성 시 폰트 설정
     c.setFont('KoreanFont', 12)  # 폰트 이름으로 설정
-
     c.drawString(30, 800, contract_text)
 
     # PDF 저장
@@ -90,4 +88,4 @@ def submit_contract():
     return '계약서가 생성되었습니다.'
 
 if __name__ == '__main__':
-    app.run()
+    app.run(debug=True)
