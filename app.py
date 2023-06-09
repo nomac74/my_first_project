@@ -1,12 +1,17 @@
 import os
 from datetime import datetime
-from flask import Flask, render_template, request
-from reportlab.pdfgen import canvas
+from flask import Flask, render_template, request, send_from_directory
 from submit_contract import create_contract
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+from reportlab.lib.pagesizes import letter
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet
 
 app = Flask(__name__)
 
-save_folder = os.path.join(os.getcwd(), 'results')  # 상대 경로로 저장 폴더 설정
+# 수정: 결과 파일을 상대 경로에 저장하도록 변경하였습니다.
+save_folder = os.path.join(app.root_path, 'contract')
 
 @app.route('/')
 def contract_form():
@@ -69,23 +74,29 @@ def submit_contract():
     file_path = os.path.join(save_folder, file_name)
 
     # PDF 생성
-    c = canvas.Canvas(file_path)
+    doc = SimpleDocTemplate(file_path, pagesize=letter)  # reportlab's high level interface for PDF creation
 
     # 한글 폰트 설정
-    from reportlab.pdfbase import pdfmetrics
-    from reportlab.pdfbase.ttfonts import TTFont
+    # 수정: 폰트 경로를 직접 지정합니다.
+    font_folder = os.path.join(app.root_path, 'fonts')
+    font_path = os.path.join(font_folder, 'AppleSDGothicNeoR.ttf')
+    pdfmetrics.registerFont(TTFont('AppleSDGothicNeoR', font_path))
 
-     # 한글 폰트 파일 로드
-    font_path = '/usr/share/fonts/truetype/NANUMSQUARENEO-ALT.ttf'  # 한글 폰트 파일의 실제 경로로 수정
-    pdfmetrics.registerFont(TTFont('KoreanFont', font_path))
+    Story = []
+    styles = getSampleStyleSheet()
 
-    # PDF 생성 시 폰트 설정
-    c.setFont('KoreanFont', 12)  # 폰트 이름으로 설정
-    c.drawString(30, 800, contract_text)
+    # 한글 폰트 지정
+    styles['Normal'].fontName = 'AppleSDGothicNeoR'
 
-    # PDF 저장
-    c.save()
-    return '계약서가 생성되었습니다.'
+    for line in contract_text.split("\n"):
+        para = Paragraph(line, styles['Normal'])  # encoding option removed
+        Story.append(para)
+        Story.append(Spacer(1, 12))  # Add a little space between lines
+
+    doc.build(Story)  # Create the PDF
+
+    # 수정: PDF 파일 자체를 반환하도록 변경하였습니다.
+    return send_from_directory(save_folder, file_name, as_attachment=True)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(port=8000)
