@@ -5,10 +5,13 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from datetime import datetime
 from pdfdocument.document import PDFDocument
+# from flask import send_file
 
 #전역변수
 current_year = date.today().year
-font_path = 'C:/users/user/appdata/local/microsoft/Windows/Fonts/NANUMSQUARENEO-ALT.ttf' 
+# font_path = 'C:/users/user/appdata/local/microsoft/Windows/Fonts/NANUMSQUARENEO-ALT.ttf' 
+font_path = 'AppleSDGothicNeoR.ttf'
+
 
 def calculate_salary(hourly_wage, start_hour, end_hour, weekly_working_days, break_time):
     if end_hour >= start_hour:
@@ -43,14 +46,14 @@ def calculate_salary(hourly_wage, start_hour, end_hour, weekly_working_days, bre
 def format_salary(salary):
     return "{:,.0f}".format(salary)
 
-pdfmetrics.registerFont(TTFont('NANUMSQUARENEO-ALT', font_path))     
-def save_to_pdf(text, file_name="C:/Users/USER/Desktop/contract.pdf"):
+pdfmetrics.registerFont(TTFont('AppleSDGothicNeoR', font_path))     
+def save_to_pdf(text, file_name="C:/Users/nomac74/Downloads/contract.pdf"):
     c = canvas.Canvas(file_name, pagesize=letter)
     width, height = letter
     lines = text.split('\n')
     line_height = 12  # You can adjust this value to your needs
     top_margin = 25  # Adjust this value too
-    c.setFont('NANUMSQUARENEO-ALT', 10)  # 폰트 설정
+    c.setFont('AppleSDGothicNeoR', 10)  # 폰트 설정
     for i, line in enumerate(lines):
         c.drawString(10, height - top_margin - i*line_height, line)
     c.save()
@@ -83,7 +86,7 @@ def generate_contract(current_year, hourly_wage, start_hour, end_hour, weekly_wo
     
     contract_template = f"""
     
-                [{current_year} 근로 계약서]
+                [{current_year} 근로 계약서 : {employee_name}님]
                     
                 고용주 {employer_name}(이하 '고용주'이라 함)과 근로자 {employee_name} (이하 '근로자'이라 함)는 
                 신의성실의 원칙에 따라 '고용주'의 규정을 준수할 것을 서약하고 다음과 같이 근로계약을 체결한다.
@@ -149,30 +152,35 @@ def generate_contract(current_year, hourly_wage, start_hour, end_hour, weekly_wo
 
 # # 윈도우 시스템 폰트 폴더를 참조하도록 경로를 수정
 import re
-def validate_name(name):  # sourcery skip: assign-if-exp, boolean-if-exp-identity
+
+def validate_name(name):
     if re.match("^[가-힣a-zA-Z\s]*$", name):
         return True
     else:
         return False
 
-def main():  # sourcery skip: low-code-quality
+def main():
     hourly_wage = None
     start_hour = None
     end_hour = None
     weekly_working_days = None
     break_time = None
 
-    employer_name = input("고용주의 이름을 입력하세요: ")
-    while not validate_name(employer_name):
-        print("Invalid input. Please enter only Korean or English alphabets.")
+    try:
         employer_name = input("고용주의 이름을 입력하세요: ")
+        while not validate_name(employer_name):
+            print("Invalid input. Please enter only Korean or English alphabets.")
+            employer_name = input("고용주의 이름을 입력하세요: ")
 
-    employee_name = input("근로자의 이름을 입력하세요: ")
-    while not validate_name(employee_name):
-        print("Invalid input. Please enter only Korean or English alphabets.")
         employee_name = input("근로자의 이름을 입력하세요: ")
+        while not validate_name(employee_name):
+            print("Invalid input. Please enter only Korean or English alphabets.")
+            employee_name = input("근로자의 이름을 입력하세요: ")
 
-    job_title = input("직무명을 입력하세요: ")
+        job_title = input("직무명을 입력하세요: ")
+    except KeyboardInterrupt:
+        print("\n프로그램이 중단되었습니다.")
+        return
     
     contract_start = list(map(int, re.split('-|\.', input("계약 시작일을 입력하세요 (월-일, 월.일 형태로): "))))
     contract_end = list(map(int, re.split('-|\.', input("계약 종료일을 입력하세요 (월-일, 월.일 형태로): "))))
@@ -212,7 +220,7 @@ def main():  # sourcery skip: low-code-quality
         else:
             print("브레이크 타임을 잘못 입력하였습니다. 다시 입력해주세요.")
 
-    contract = generate_contract(hourly_wage, start_hour, end_hour, weekly_working_days, break_time, employer_name, employee_name, job_title, contract_start, contract_end)
+    contract = generate_contract(current_year, hourly_wage, start_hour, end_hour, weekly_working_days, break_time, employer_name, employee_name, job_title, contract_start, contract_end)
     print(contract)
     return contract, employee_name
 
@@ -221,3 +229,7 @@ if __name__ == "__main__":
     
     file_name = f"{current_year}_근로계약서_{employee_name}.pdf"
     save_to_pdf(contract, file_name)
+
+    
+# PDF 파일 생성 후 파일 경로를 반환받은 후에
+
